@@ -1,0 +1,12 @@
+{
+    "name": "buchs/markdownmirror",
+    "description": "Joomla system plugin to serve pages as Markdown for AI agents",
+    "type": "joomla-plugin",
+    "require": {
+        "league/html-to-markdown": "^5.1"
+    },
+    "config": {
+        "vendor-dir": "vendor",
+        "optimize-autoloader": true
+    }
+}
