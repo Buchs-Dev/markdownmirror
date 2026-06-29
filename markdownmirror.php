@@ -23,7 +23,10 @@ class PlgSystemMarkdownmirror extends CMSPlugin
             return;
         }
 
-        if ((int) $app->input->getInt('md', 0) !== 1) {
+        $wantsMarkdown = (int) $app->input->getInt('md', 0) === 1
+            || $this->acceptsMarkdown($_SERVER['HTTP_ACCEPT'] ?? '');
+
+        if (!$wantsMarkdown) {
             return;
         }
 
@@ -36,10 +39,10 @@ class PlgSystemMarkdownmirror extends CMSPlugin
 
         $app->setBody($output);
 
-        if (!headers_sent()) {
-            header('Content-Type: text/markdown; charset=utf-8');
-            header('X-Robots-Tag: noindex, follow');
-        }
+        $app->setHeader('Content-Type', 'text/markdown; charset=utf-8', true);
+        $app->setHeader('X-Robots-Tag', 'noindex, follow', true);
+        $app->setHeader('Vary', 'Accept', false);
+        $app->setHeader('X-Markdown-Tokens', (string) $this->estimateTokens($output), true);
     }
 
     private function extractMeta(string $html): array
@@ -97,39 +100,28 @@ class PlgSystemMarkdownmirror extends CMSPlugin
         $dom   = $this->parseDom($html);
         $xpath = new DOMXPath($dom);
 
-        // Ordered preference: semantic → Joomla Cassiopeia → common templates.
-        $selectors = [
-            '//main',
-            '//article',
-            '//*[@role="main"]',
-            '//*[contains(@class,"item-page")]',
-            '//*[contains(@class,"com-content-article__body")]',
-            '//*[@id="sp-component"]',
-            '//*[contains(@class,"blog-item")]',
-            '//body',
-        ];
-
-        foreach ($selectors as $selector) {
-            $nodes = $xpath->query($selector);
-            if ($nodes->length > 0) {
-                return $dom->saveHTML($nodes->item(0));
-            }
+        $nodes = $xpath->query('//article');
+        if ($nodes->length > 0) {
+            return $dom->saveHTML($nodes->item(0));
         }
 
-        return $html;
+        return '';
     }
 
     private function toMarkdown(string $html): string
     {
         $converter = new HtmlConverter([
-            'strip_tags'            => false,
+            'strip_tags'            => true,
             'remove_nodes'          => 'script style nav footer header aside',
             'hard_break'            => true,
             'preserve_comments'     => false,
             'header_style'          => 'atx',
         ]);
 
-        return trim($converter->convert($html));
+        $markdown = $converter->convert($html);
+        $markdown = preg_replace("/\n{3,}/", "\n\n", $markdown);
+
+        return trim($markdown);
     }
 
     private function buildFrontmatter(array $meta): string
@@ -151,6 +143,16 @@ class PlgSystemMarkdownmirror extends CMSPlugin
         }
 
         return $value;
+    }
+
+    private function acceptsMarkdown(string $accept): bool
+    {
+        return stripos($accept, 'text/markdown') !== false;
+    }
+
+    private function estimateTokens(string $text): int
+    {
+        return (int) ceil(mb_strlen($text) / 4);
     }
 
     private function parseDom(string $html): DOMDocument
