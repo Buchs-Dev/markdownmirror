@@ -2,7 +2,7 @@
 <updates>
     <update>
         <name>System - Markdown Mirror</name>
-        <description>Outputs Markdown versions of Joomla pages when ?md=1 is present. Designed for AI agent consumption.</description>
+        <description>Automatically serves Markdown to AI agents based on User-Agent or Accept header. Designed for AI agent consumption.</description>
         <element>markdownmirror</element>
         <type>plugin</type>
         <folder>system</folder>

@@ -3,7 +3,7 @@
 	<name>System - Markdown Mirror</name>
 	<author>Buchs</author>
 	<version>0.2.0</version>
-	<description>Outputs Markdown versions of Joomla pages when ?md=1 is present. Designed for AI agent consumption.</description>
+	<description>Automatically serves Markdown to AI agents based on User-Agent or Accept header. Designed for AI agent consumption.</description>
 	<joomlaVersion>5.0,6.0</joomlaVersion>
 	<files>
 		<filename plugin="markdownmirror">markdownmirror.php</filename>

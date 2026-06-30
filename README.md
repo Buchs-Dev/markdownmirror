@@ -1,16 +1,12 @@
 # Markdown Mirror — Joomla System Plugin
 
-A Joomla 5/6 system plugin that serves pages as Markdown for AI agents and other clients that prefer plain text over HTML.
+A Joomla 5/6 system plugin that automatically serves pages as Markdown to AI agents, without any changes to your content or templates.
 
 ## How it works
 
 On every front-end page request the plugin checks whether the client wants Markdown. If so, it converts the rendered HTML to Markdown and returns it instead of the normal HTML response, along with a YAML frontmatter block containing page metadata.
 
-Markdown is served when **any** of the following conditions are met:
-
-- The query string contains `?md=1`
-- The `Accept` request header contains `text/markdown`
-- The `User-Agent` matches a known AI crawler (GPTBot, ClaudeBot, Perplexity, etc.)
+Markdown is served automatically when the `User-Agent` matches a known AI crawler (GPTBot, ClaudeBot, PerplexityBot, etc.), or when the client sends `Accept: text/markdown`. The query parameter `?md=1` can also be used as a manual trigger for testing.
 
 The response sets `Content-Type: text/markdown`, `X-Robots-Tag: noindex, follow`, `Vary: Accept`, and `X-Markdown-Tokens` (an estimated token count).
 
