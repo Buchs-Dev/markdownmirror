@@ -1,6 +1,6 @@
 # Markdown Mirror — Joomla System Plugin
 
-A Joomla 5/6 system plugin that automatically serves pages as Markdown to AI agents, without any changes to your content or templates.
+By [Buchs](https://buchs.dk) — A Joomla 5/6 system plugin that automatically serves pages as Markdown to AI agents, without any changes to your content or templates.
 
 ## How it works
 
