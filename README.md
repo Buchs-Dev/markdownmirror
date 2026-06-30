@@ -47,6 +47,17 @@ composer install
 
 The only runtime dependency is [`league/html-to-markdown`](https://github.com/thephpleague/html-to-markdown).
 
+This plugin uses the modern Joomla 4.2+/5/6 namespaced plugin structure:
+
+```
+markdownmirror.xml              Manifest (declares the src namespace)
+services/provider.php           DI container registration
+src/Extension/Markdownmirror.php  Plugin class (SubscriberInterface)
+vendor/                         Composer dependencies
+```
+
+The class lives in the `Buchs\Plugin\System\Markdownmirror\Extension` namespace and subscribes to `onAfterRender` via `getSubscribedEvents()`.
+
 ## Version
 
-Current version: **0.2.0** — see `markdownmirror.xml` for the changelog and update server URL.
+Current version: **0.4.0** — see `markdownmirror.xml` for the changelog and update server URL.

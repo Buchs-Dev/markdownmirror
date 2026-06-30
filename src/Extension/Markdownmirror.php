@@ -4,17 +4,27 @@
  * @subpackage  System.markdownmirror
  */
 
+namespace Buchs\Plugin\System\Markdownmirror\Extension;
+
 defined('_JEXEC') or die;
 
+use DOMDocument;
+use DOMXPath;
 use Joomla\CMS\Factory;
 use Joomla\CMS\Plugin\CMSPlugin;
 use Joomla\CMS\Uri\Uri;
+use Joomla\Event\SubscriberInterface;
 use League\HTMLToMarkdown\HtmlConverter;
 
-require_once __DIR__ . '/vendor/autoload.php';
-
-class PlgSystemMarkdownmirror extends CMSPlugin
+class Markdownmirror extends CMSPlugin implements SubscriberInterface
 {
+    public static function getSubscribedEvents(): array
+    {
+        return [
+            'onAfterRender' => 'onAfterRender',
+        ];
+    }
+
     public function onAfterRender(): void
     {
         $app = Factory::getApplication();
