@@ -9,4 +9,7 @@
 		<filename plugin="markdownmirror">markdownmirror.php</filename>
 		<folder>vendor</folder>
 	</files>
+	<updateservers>
+		<server type="extension" name="plg_system_markdownmirror">https://raw.githubusercontent.com/Buchs-Dev/markdownmirror/master/updates.xml</server>
+	</updateservers>
 </extension>
