@@ -9,9 +9,9 @@
         <client>0</client>
         <version>0.4.0</version>
         <downloads>
-            <downloadurl type="full" format="zip">https://github.com/Buchs-Dev/markdownmirror/releases/download/v0.3.0/plg_system_markdownmirror.zip</downloadurl>
+            <downloadurl type="full" format="zip">https://github.com/Buchs-Dev/markdownmirror/releases/download/v0.4.0/plg_system_markdownmirror.zip</downloadurl>
         </downloads>
-        <sha256>0000000000000000000000000000000000000000000000000000000000000000</sha256>
+        <sha256>0cfde09e594717ef6cef6c48ecdc23dbfea5d3197e41c8139cb989ac240bfb4f</sha256>
         <tags>
             <tag>stable</tag>
         </tags>
