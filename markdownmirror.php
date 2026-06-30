@@ -24,7 +24,8 @@ class PlgSystemMarkdownmirror extends CMSPlugin
         }
 
         $wantsMarkdown = (int) $app->input->getInt('md', 0) === 1
-            || $this->acceptsMarkdown($_SERVER['HTTP_ACCEPT'] ?? '');
+            || $this->acceptsMarkdown($_SERVER['HTTP_ACCEPT'] ?? '')
+            || $this->isAiAgent($_SERVER['HTTP_USER_AGENT'] ?? '');
 
         if (!$wantsMarkdown) {
             return;
@@ -148,6 +149,31 @@ class PlgSystemMarkdownmirror extends CMSPlugin
     private function acceptsMarkdown(string $accept): bool
     {
         return stripos($accept, 'text/markdown') !== false;
+    }
+
+    private function isAiAgent(string $userAgent): bool
+    {
+        if ($userAgent === '') {
+            return false;
+        }
+
+        $patterns = [
+            'GPTBot', 'ChatGPT-User', 'OAI-SearchBot',
+            'ClaudeBot', 'Claude-Web', 'anthropic-ai',
+            'Google-Extended', 'Googlebot-Extended',
+            'PerplexityBot', 'YouBot', 'CCBot',
+            'Amazonbot', 'cohere-ai', 'AI2Bot',
+            'Applebot-Extended', 'Diffbot', 'FacebookBot',
+            'Timpibot', 'PetalBot',
+        ];
+
+        foreach ($patterns as $pattern) {
+            if (stripos($userAgent, $pattern) !== false) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     private function estimateTokens(string $text): int
