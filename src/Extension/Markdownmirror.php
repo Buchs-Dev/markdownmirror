@@ -9,9 +9,11 @@ namespace Buchs\Plugin\System\Markdownmirror\Extension;
 defined('_JEXEC') or die;
 
 use DOMDocument;
+use DOMNode;
 use DOMXPath;
 use Joomla\CMS\Factory;
 use Joomla\CMS\Plugin\CMSPlugin;
+use Joomla\CMS\Router\Route;
 use Joomla\CMS\Uri\Uri;
 use Joomla\Event\SubscriberInterface;
 use League\HTMLToMarkdown\HtmlConverter;
@@ -112,11 +114,62 @@ class Markdownmirror extends CMSPlugin implements SubscriberInterface
         $xpath = new DOMXPath($dom);
 
         $nodes = $xpath->query('//article');
-        if ($nodes->length > 0) {
-            return $dom->saveHTML($nodes->item(0));
+        if ($nodes->length === 0) {
+            return '';
         }
 
-        return '';
+        $article = $nodes->item(0);
+        $this->resolveUrls($xpath, $article);
+
+        return $dom->saveHTML($article);
+    }
+
+    /**
+     * Rewrite every <a href> and <img src> inside the article to an absolute
+     * URL so the Markdown remains usable once it is stored away from the site.
+     */
+    private function resolveUrls(DOMXPath $xpath, DOMNode $article): void
+    {
+        foreach ($xpath->query('.//a[@href]', $article) as $node) {
+            $node->setAttribute('href', $this->resolveUrl($node->getAttribute('href')));
+        }
+
+        foreach ($xpath->query('.//img[@src]', $article) as $node) {
+            $node->setAttribute('src', $this->resolveUrl($node->getAttribute('src')));
+        }
+    }
+
+    private function resolveUrl(string $url): string
+    {
+        $url = trim($url);
+
+        if ($url === '') {
+            return $url;
+        }
+
+        // Leave page anchors and non-HTTP schemes (mailto:, tel:, …) untouched.
+        if ($url[0] === '#' || preg_match('#^(mailto:|tel:|javascript:|data:)#i', $url)) {
+            return $url;
+        }
+
+        // Already absolute.
+        if (preg_match('#^https?://#i', $url)) {
+            return $url;
+        }
+
+        // Protocol-relative (//host/path).
+        if (str_starts_with($url, '//')) {
+            return 'https:' . $url;
+        }
+
+        // Internal Joomla non-SEF link: run it through the router so we get the
+        // human-readable SEF path (index.php?Itemid=110 -> /kontakt), absolute.
+        if (str_starts_with($url, 'index.php') || str_starts_with($url, '/index.php')) {
+            return Route::_(ltrim($url, '/'), false, Route::TLS_IGNORE, true);
+        }
+
+        // Root- or document-relative path: prepend the site root.
+        return rtrim(Uri::root(), '/') . '/' . ltrim($url, '/');
     }
 
     private function toMarkdown(string $html): string
@@ -130,6 +183,19 @@ class Markdownmirror extends CMSPlugin implements SubscriberInterface
         ]);
 
         $markdown = $converter->convert($html);
+
+        // WYSIWYG editors litter content with non-breaking spaces and empty
+        // paragraphs (<p>&nbsp;</p>); normalise them to regular spaces first.
+        $markdown = str_replace("\xc2\xa0", ' ', $markdown);
+
+        // Strip trailing whitespace per line. This also empties out lines that
+        // contained only spaces, so the blank-line collapse below can remove them.
+        $markdown = preg_replace('/[ \t]+$/m', '', $markdown);
+
+        // Collapse runs of spaces inside a line (but keep leading indentation).
+        $markdown = preg_replace('/(?<=\S) {2,}/', ' ', $markdown);
+
+        // Collapse three or more newlines down to a single blank line.
         $markdown = preg_replace("/\n{3,}/", "\n\n", $markdown);
 
         return trim($markdown);
